@@ -28,8 +28,8 @@ struct AudioProcessingParams
 	AudioProcessingParams()
 		: spreadPower(0.25f)
 		, hammingParam(0.501f)
-		, timeDomainSizeScale(30.0f)
-		, frequencyDomainSizeScale(10.0f)
+		, timeDomainSizeScale(40.0f)
+		, frequencyDomainSizeScale(30.0f)
 	{}
 
 	float spreadPower;

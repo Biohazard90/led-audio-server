@@ -736,9 +736,6 @@ void AudioProcessor::SampleThread()
 	BYTE *oldDataCache = nullptr;
 	int oldDataCount = 0;
 
-	//PersistentTimer fpsTimer;
-	//int frameCount = 0;
-
 WasapiSampleRestart:
 
 	while (!shouldRestart)
@@ -978,7 +975,6 @@ WasapiSampleRestart:
 		bool shouldRunCallback = false;
 		if (isSilent || shouldRestart)
 		{
-			//++frameCount;
 			Sleep(sampleSleepTimer);
 			numFramesFFTWriteIndex = 0;
 			outputBufferMutex.lock();
@@ -990,7 +986,6 @@ WasapiSampleRestart:
 		// FFT input buffer full
 		else if (numFramesFFTWriteIndex == numFramesNotZeroPadded)
 		{
-			//++frameCount;
 			numFramesFFTWriteIndex = 0;
 
 			// Run FFT
@@ -1135,14 +1130,6 @@ WasapiSampleRestart:
 				callback(silentData);
 			}
 		}
-
-		//fpsTimer.Update();
-		//if (fpsTimer.GetTimePassed() >= 1.0f)
-		//{
-		//	fpsTimer.Reset();
-		//	WPX_Msg("audio FPS: %i\n", frameCount);
-		//	frameCount = 0;
-		//}
 	}
 
 	if (shouldRestart)
