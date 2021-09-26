@@ -152,18 +152,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
 		dt = MIN(0.2f, dt);
 		const int ledDataSize = 128;
 
-		float avgNoise = 0.0f;
+		//float avgNoise = 0.0f;
 		float maxNoise = 0.0f;
 		for (int i = 0; i < 64; ++i)
 		{
 			//buffer2x64[i] *= 1 + 3 * (i + 1) / (1 + i * i);
 			//buffer2x64[64 + i] *= 1 + 3 * (i + 1) / (1 + i * i);
 
-			avgNoise += buffer2x64[i] + buffer2x64[64 + i];
+			//avgNoise += buffer2x64[i] + buffer2x64[64 + i];
 			maxNoise = MAX(maxNoise, MAX(buffer2x64[i], buffer2x64[64 + i]));
 		}
 
-		avgNoise /= 128.0f;
+		//avgNoise /= 128.0f;
 		//const float noiseTriggerLevel = (maxNoise > 0.01f) ? avgNoise * 0.333f : 0.5f;
 		const float noiseTriggerLevel = (maxNoise > 0.01f) ? maxNoise * 0.333f : 0.5f;
 		normalizationMean += (noiseTriggerLevel - normalizationMean) * dt * 0.7f;
