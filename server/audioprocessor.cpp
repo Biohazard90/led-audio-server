@@ -1168,19 +1168,22 @@ WasapiSampleRestart:
 		//	}
 		//}
 
-		StopWASAPI(&pEnumerator, &pAudioClient, &pCaptureClient);
-
-		isRecording = StartWASAPI(audioProcessingParams, currentDevice, channelCount, deviceFlags, numFramesFFT, numBinsFFT, &pEnumerator, &pAudioClient, &pCaptureClient);
-		if (isRecording)
+		if (shouldRestart)
 		{
-			shouldRestart = false;
-		}
-		else
-		{
-			Sleep(1000);
-		}
+			StopWASAPI(&pEnumerator, &pAudioClient, &pCaptureClient);
 
-		goto WasapiSampleRestart;
+			isRecording = StartWASAPI(audioProcessingParams, currentDevice, channelCount, deviceFlags, numFramesFFT, numBinsFFT, &pEnumerator, &pAudioClient, &pCaptureClient);
+			if (isRecording)
+			{
+				shouldRestart = false;
+			}
+			else
+			{
+				Sleep(1000);
+			}
+
+			goto WasapiSampleRestart;
+		}
 	}
 
 	delete[] oldDataCache;
