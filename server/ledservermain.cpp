@@ -179,9 +179,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
 
 		uint8 ledData[ledDataSize];
 
-		for (int i = 0; i < ledDataSize; ++i)
+		for (int i = 0; i < 64; ++i)
 		{
-			ledData[i] = CLAMP(bufferCache[i] * 255.0f, 0, 255);
+			ledData[i] = CLAMP(bufferCache[64 + i] * 255.0f, 0, 255);
+			ledData[64 + i] = CLAMP(bufferCache[i] * 255.0f, 0, 255);
 		}
 
 		arduino->writeSerialPort((const char*)ledData, ledDataSize);

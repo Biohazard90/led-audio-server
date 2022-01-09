@@ -631,27 +631,32 @@ void AudioProcessor::StartRecording(const string &deviceId)
 		currentDevice = deviceId;
 		audioSampleThread = thread(&AudioProcessor::SampleThread, this);
 	}
+	else
+	{
+		OnDefaultDeviceChanged();
+		audioSampleThread = thread(&AudioProcessor::SampleThread, this);
+	}
 }
 
 void AudioProcessor::StopRecording()
 {
+	// Wait for sample thread to exit
+	if (audioSampleThread.joinable())
+	{
+		// Tell sample thread to quit
+		audioSampleThreadStopCondition.lock();
+		// Wake up the thread
+		//SetEvent(audioAvailabilityEvent);
+
+		audioSampleThread.join();
+		audioSampleThreadStopCondition.unlock();
+	}
+
 	if (isRecording)
 	{
 		isRecording = false;
 		if (pAudioClient != nullptr)
 		{
-			// Wait for sample thread to exit
-			if (audioSampleThread.joinable())
-			{
-				// Tell sample thread to quit
-				audioSampleThreadStopCondition.lock();
-				// Wake up the thread
-				//SetEvent(audioAvailabilityEvent);
-
-				audioSampleThread.join();
-				audioSampleThreadStopCondition.unlock();
-			}
-
 			if (pEnumerator != nullptr)
 			{
 				pEnumerator->UnregisterEndpointNotificationCallback(eventBase);
@@ -786,7 +791,12 @@ WasapiSampleRestart:
 
 		if (pCaptureClient == nullptr)
 		{
-			StartWASAPI(audioProcessingParams, currentDevice, channelCount, deviceFlags, numFramesFFT, numBinsFFT, &pEnumerator, &pAudioClient, &pCaptureClient);
+			StopWASAPI(&pEnumerator, &pAudioClient, &pCaptureClient);
+			isRecording = StartWASAPI(audioProcessingParams, currentDevice, channelCount, deviceFlags, numFramesFFT, numBinsFFT, &pEnumerator, &pAudioClient, &pCaptureClient);
+			if (!isRecording)
+			{
+				Sleep(1000);
+			}
 			continue;
 		}
 
@@ -1134,6 +1144,16 @@ WasapiSampleRestart:
 
 	if (shouldRestart)
 	{
+		// Signal to exit while restarting, ignore restart then
+		if (audioSampleThreadStopCondition.try_lock())
+		{
+			audioSampleThreadStopCondition.unlock();
+		}
+		else
+		{
+			shouldRestart = false;
+		}
+
 		//bool isWASAPIAllowed = true;
 		//if (pFnCallNtPowerInformation != nullptr)
 		//{
@@ -1149,10 +1169,15 @@ WasapiSampleRestart:
 		//}
 
 		StopWASAPI(&pEnumerator, &pAudioClient, &pCaptureClient);
-		//if (isWASAPIAllowed)
+
+		isRecording = StartWASAPI(audioProcessingParams, currentDevice, channelCount, deviceFlags, numFramesFFT, numBinsFFT, &pEnumerator, &pAudioClient, &pCaptureClient);
+		if (isRecording)
 		{
 			shouldRestart = false;
-			StartWASAPI(audioProcessingParams, currentDevice, channelCount, deviceFlags, numFramesFFT, numBinsFFT, &pEnumerator, &pAudioClient, &pCaptureClient);
+		}
+		else
+		{
+			Sleep(1000);
 		}
 
 		goto WasapiSampleRestart;

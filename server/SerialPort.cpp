@@ -20,13 +20,14 @@ SerialPort::SerialPort(const char *portName)
                                 NULL);
     if (this->handler == INVALID_HANDLE_VALUE)
     {
-        if (GetLastError() == ERROR_FILE_NOT_FOUND)
+        int lastError = GetLastError();
+        if (lastError == ERROR_FILE_NOT_FOUND)
         {
-            std::cerr << "ERROR: Handle was not attached.Reason : " << portName << " not available\n";
+            std::cerr << "ERROR: Handle was not attached. Reason : " << portName << " not available\n";
         }
         else
         {
-            std::cerr << "ERROR!!!\n";
+            std::cerr << "ERROR: " << lastError << "\n";
         }
     }
     else
